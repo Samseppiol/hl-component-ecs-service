@@ -509,7 +509,7 @@ CloudFormation do
     SchedulingStrategy scheduling_strategy if !strategy.nil?
     PlacementStrategies placement_strategies if !placement_strategies.nil?
     PlacementConstraints [{Type: "distinctInstance"}] if task_placement_distinct_instance_constraint
-    DeploymentController [{Type: Ref('DeploymentController')}] if (deployment_controller && circuit_breaker)
+    DeploymentController ({Type: Ref('DeploymentController')}) if (deployment_controller && circuit_breaker)
 
     if service_loadbalancer.any?
       Role Ref('Role') unless awsvpc_enabled
