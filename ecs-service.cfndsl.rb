@@ -481,6 +481,20 @@ CloudFormation do
   task_placement_distinct_instance_constraint = external_parameters.fetch(:distinct_instance_constraint, false)
   health_check_grace_period = external_parameters.fetch(:health_check_grace_period, nil)
   placement_strategies = external_parameters.fetch(:placement_strategies, nil)
+  circuit_breaker = external_parameters.fetch(:circuit_breaker, true)
+  deployment_controller = external_parameters.fetch(:deployment_controller, true)
+
+
+  deployment_config = {
+    MinimumHealthyPercent: Ref('MinimumHealthyPercent'),
+    MaximumPercent: Ref('MaximumPercent')
+  }
+  
+  deployment_config[:DeploymentCircuitBreaker] = {
+    Enable: Ref('EnableCircuitBreaker'),
+    Rollback: Ref('CircuitBreakerRollback')
+  } if circuit_breaker
+
   ECS_Service('Service') do
     DependsOn rule_names if rule_names.any?
     if awsvpc_enabled
@@ -490,14 +504,12 @@ CloudFormation do
     Cluster Ref("EcsCluster")
     HealthCheckGracePeriodSeconds health_check_grace_period if !health_check_grace_period.nil?
     DesiredCount Ref('DesiredCount') if strategy != 'DAEMON'
-    DeploymentConfiguration ({
-        MinimumHealthyPercent: Ref('MinimumHealthyPercent'),
-        MaximumPercent: Ref('MaximumPercent')
-    })
+    DeploymentConfiguration deployment_config
     TaskDefinition Ref('Task')
     SchedulingStrategy scheduling_strategy if !strategy.nil?
     PlacementStrategies placement_strategies if !placement_strategies.nil?
     PlacementConstraints [{Type: "distinctInstance"}] if task_placement_distinct_instance_constraint
+    DeploymentController [{Type: Ref('DeploymentController')}] if (deployment_controller && circuit_breaker)
 
     if service_loadbalancer.any?
       Role Ref('Role') unless awsvpc_enabled

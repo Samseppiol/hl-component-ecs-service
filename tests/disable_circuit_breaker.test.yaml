@@ -1,0 +1,27 @@
+test_metadata:
+  type: config
+  name: disable_circuit_breaker
+  description: explicitly disable circuit breaker config
+
+network_mode: awsvpc
+cpu: 1024
+memory: 2048
+
+platform_version: '1.4.0'
+
+circuit_breaker: false
+deployment_controller: ECS
+task_definition:
+  nginx:
+    repo: nginx
+    image: nginx
+
+targetgroup:
+  name: nginx
+  container: nginx
+  port: 80
+  protocol: http
+  listener: http
+  healthcheck:
+    path: /
+    code: 200

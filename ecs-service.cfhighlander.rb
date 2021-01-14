@@ -62,6 +62,10 @@ CfhighlanderTemplate do
 
     ComponentParam 'NamespaceId' if defined? service_discovery
 
+    ComponentParam 'EnableCircuitBreaker', 'true', allowedValues: ['true','false']
+    ComponentParam 'CircuitBreakerRollback', 'true', allowedValues: ['true','false']
+    ComponentParam 'DeploymentController', 'ECS', allowedValues: ['ECS','CODE_DEPLOY', 'EXTERNAL']
+
   end
 
 end
